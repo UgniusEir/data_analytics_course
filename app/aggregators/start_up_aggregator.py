@@ -49,27 +49,22 @@ def check_file_exists(file_path):
 def compute_stats():
     """Compute and save accident statistics."""
     check_file_exists(INCIDENTS_FILE)
-
     try:
         df = pd.read_json(INCIDENTS_FILE)
-
         # Ensure required columns exist
         if "zuvusiuSkaicius" not in df.columns or "suzeistuSkaicius" not in df.columns:
             print("Error: Required columns not found in data")
             return
-
         total_deaths = int(df["zuvusiuSkaicius"].sum())
         total_injured = int(df["suzeistuSkaicius"].sum())
         total_accidents = len(df)
         total_hit_run = 0
-
         if "eismoDalyviai" in df.columns:
             for driver_list in df["eismoDalyviai"].dropna():
                 for driver in driver_list:
                     if isinstance(driver, dict) and driver.get("kategorija") == "Automobilio vairuotojas":
                         if driver.get("pasisalino") == "Taip":
                             total_hit_run += 1
-
         stats = {
             "data": [
                 {"statistic": "Total deaths", "value": total_deaths},
@@ -78,7 +73,6 @@ def compute_stats():
                 {"statistic": "Total hit and run accidents", "value": total_hit_run},
             ]
         }
-
         # Save statistics to JSON file
         with open(STATS_FILE, "w", encoding="utf-8") as f:
             json.dump(stats, f, indent=4, ensure_ascii=False)
