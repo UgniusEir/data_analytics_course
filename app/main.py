@@ -3,11 +3,12 @@ import json
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.aggregators.start_up_aggregator import aggregate_accidents_by_month, aggregate_car_types, aggregate_intoxicated_drivers, aggregate_intoxicated_drivers_by_month, aggregate_line_chart, aggregate_map_data, compute_stats, download_data
-from app.environment import CAR_MAKERS, DATA_FOLDER, INC_PER_MONTH_DATA_FILE, INTOXICATED_DRIVERS_MONTH, MAP_DATA, STATS_FILE
+from aggregators.start_up_aggregator import aggregate_accidents_by_month, aggregate_car_types, aggregate_intoxicated_drivers, aggregate_intoxicated_drivers_by_month, aggregate_line_chart, aggregate_map_data, compute_stats, download_data
+from environment import CAR_MAKERS, DATA_FOLDER, INC_PER_MONTH_DATA_FILE, INTOXICATED_DRIVERS_MONTH, MAP_DATA, STATS_FILE
 origins = [
     "http://localhost",
     "http://localhost:5173",
+    "http://localhost:3000",
     "http://localhost:8080",
 ]
 
@@ -29,14 +30,29 @@ os.makedirs(DATA_FOLDER, exist_ok=True)
 @app.on_event("startup")
 async def startup_event():
     """Run tasks before FastAPI starts."""
+import logging
+logging.basicConfig(level=logging.INFO)
+
+@app.on_event("startup")
+async def startup_event():
+    logging.info("Startup: downloading data...")
     await download_data()
+    logging.info("Startup: computing stats...")
     compute_stats()
-    aggregate_line_chart()  # Save the aggregated data
+    logging.info("Startup: aggregating line chart...")
+    aggregate_line_chart()
+    logging.info("Startup: aggregating accidents by month...")
     aggregate_accidents_by_month()
+    logging.info("Startup: aggregating car types...")
     aggregate_car_types()
+    logging.info("Startup: aggregating intoxicated drivers...")
     aggregate_intoxicated_drivers()
+    logging.info("Startup: aggregating intoxicated drivers by month...")
     aggregate_intoxicated_drivers_by_month()
-    # aggregate_map_data()
+    logging.info("Startup: aggregating map data...")
+    aggregate_map_data()
+    logging.info("Startup: done!")
+
 
 def load_json(filename: str):
     filepath = os.path.join(filename)
