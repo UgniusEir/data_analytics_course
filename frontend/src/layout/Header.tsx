@@ -5,7 +5,7 @@ export default function Header() {
     <header className="bg-white shadow-md p-4">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold text-gray-800">
-          Logo
+          Traffilyzer
         </Link>
         <nav>
           <ul className="flex space-x-6">
